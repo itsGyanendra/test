@@ -106,6 +106,7 @@ class Challenges(db.Model):
     state = db.Column(db.String(80), nullable=False, default="visible")
     requirements = db.Column(db.JSON)
 
+    user_variables = db.relationship('UserVariables', backref='challenge', lazy=True)
     files = db.relationship("ChallengeFiles", backref="challenge")
     tags = db.relationship("Tags", backref="challenge")
     hints = db.relationship("Hints", backref="challenge")
@@ -134,8 +135,16 @@ class Challenges(db.Model):
     def html(self):
         from CTFd.utils.config.pages import build_markdown
         from CTFd.utils.helpers import markup
+        from CTFd.utils.user import get_current_team, get_current_user
+        from CTFd.utils.config import is_teams_mode
 
-        return markup(build_markdown(self.description))
+        descriptionwithreplacement = self.description
+        user_variables = UserVariables.query.filter_by(challenge_id=self.id, user_email=get_current_user().email).all()
+        for variable in user_variables:
+            placeholder = f'{{{{{variable.variable_name}}}}}'
+            value = variable.variable_value 
+            descriptionwithreplacement= descriptionwithreplacement.replace(placeholder, value)
+        return markup(build_markdown(descriptionwithreplacement))
 
     @property
     def plugin_class(self):
@@ -148,6 +157,15 @@ class Challenges(db.Model):
 
     def __repr__(self):
         return "<Challenge %r>" % self.name
+
+
+class UserVariables(db.Model):
+    __tablename__ = "uservariable"
+    id = db.Column(db.Integer, primary_key=True)
+    user_email = db.Column(db.String(128), nullable=False)
+    challenge_id = db.Column(db.Integer, db.ForeignKey('challenges.id', ondelete="CASCADE"))
+    variable_name = db.Column(db.String(50), nullable=False)
+    variable_value = db.Column(db.String(100), nullable=True)
 
 
 class Hints(db.Model):
@@ -295,6 +313,7 @@ class ChallengeFiles(Files):
         super(ChallengeFiles, self).__init__(**kwargs)
 
 
+
 class PageFiles(Files):
     __mapper_args__ = {"polymorphic_identity": "page"}
     page_id = db.Column(db.Integer, db.ForeignKey("pages.id"))
@@ -312,7 +331,7 @@ class Flags(db.Model):
     type = db.Column(db.String(80))
     content = db.Column(db.Text)
     data = db.Column(db.Text)
-
+    user_email = db.Column(db.String(120))
     __mapper_args__ = {"polymorphic_on": type}
 
     def __init__(self, *args, **kwargs):

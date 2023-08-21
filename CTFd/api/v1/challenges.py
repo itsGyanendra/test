@@ -12,11 +12,13 @@ from CTFd.constants import RawEnum
 from CTFd.models import ChallengeFiles as ChallengeFilesModel
 from CTFd.models import Challenges
 from CTFd.models import ChallengeTopics as ChallengeTopicsModel
+from CTFd.models import UserVariables
 from CTFd.models import Fails, Flags, Hints, HintUnlocks, Solves, Submissions, Tags, db
 from CTFd.plugins.challenges import CHALLENGE_CLASSES, get_chal_class
 from CTFd.schemas.challenges import ChallengeSchema
 from CTFd.schemas.flags import FlagSchema
 from CTFd.schemas.hints import HintSchema
+from CTFd.schemas.uservariables import UserVariableSchema
 from CTFd.schemas.tags import TagSchema
 from CTFd.utils import config, get_config
 from CTFd.utils import user as current_user
@@ -789,6 +791,20 @@ class ChallengeHints(Resource):
             return {"success": False, "errors": response.errors}, 400
 
         return {"success": True, "data": response.data}
+    
+@challenges_namespace.route("/<challenge_id>/uservariables")
+class ChallengeUserVariables(Resource):
+    @admins_only
+    def get(self, challenge_id):
+        uservariables = UserVariables.query.filter_by(challenge_id=challenge_id).all()
+        print(uservariables)
+        schema = UserVariableSchema(many=True)
+        response = schema.dump(uservariables)
+
+        if response.errors:
+            return {"success": False, "errors": response.errors}, 400
+
+        return {"success": True, "data": response.data}
 
 
 @challenges_namespace.route("/<challenge_id>/flags")
@@ -798,7 +814,7 @@ class ChallengeFlags(Resource):
         flags = Flags.query.filter_by(challenge_id=challenge_id).all()
         schema = FlagSchema(many=True)
         response = schema.dump(flags)
-
+        print(flags)
         if response.errors:
             return {"success": False, "errors": response.errors}, 400
 

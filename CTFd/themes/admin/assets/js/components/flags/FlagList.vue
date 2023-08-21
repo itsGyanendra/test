@@ -19,6 +19,7 @@
     <table id="flagsboard" class="table table-striped">
       <thead>
         <tr>
+          <td class="text-center"><b>User Email</b></td>
           <td class="text-center"><b>Type</b></td>
           <td class="text-center"><b>Flag</b></td>
           <td class="text-center"><b>Settings</b></td>
@@ -27,6 +28,9 @@
       <tbody>
         <tr :name="flag.id" v-for="flag in flags" :key="flag.id">
           <td class="text-center">{{ flag.type }}</td>
+          <td class="text-break">
+            <pre class="flag-user_email">{{ flag.user_email }}</pre>
+          </td>
           <td class="text-break">
             <pre class="flag-content">{{ flag.content }}</pre>
           </td>

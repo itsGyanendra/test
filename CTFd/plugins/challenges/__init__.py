@@ -1,19 +1,23 @@
 from flask import Blueprint
 
+
 from CTFd.models import (
     ChallengeFiles,
     Challenges,
     Fails,
+    UserVariables,
     Flags,
     Hints,
     Solves,
     Tags,
-    db,
+    db
 )
+from CTFd.utils.user import get_current_user, get_current_team
 from CTFd.plugins import register_plugin_assets_directory
 from CTFd.plugins.flags import FlagException, get_flag_class
 from CTFd.utils.uploads import delete_file
 from CTFd.utils.user import get_ip
+from CTFd.utils.config import is_teams_mode
 
 
 class BaseChallenge(object):
@@ -96,6 +100,7 @@ class BaseChallenge(object):
         Fails.query.filter_by(challenge_id=challenge.id).delete()
         Solves.query.filter_by(challenge_id=challenge.id).delete()
         Flags.query.filter_by(challenge_id=challenge.id).delete()
+        UserVariables.query.filter_by(challenge_id=challenge.id).delete()
         files = ChallengeFiles.query.filter_by(challenge_id=challenge.id).all()
         for f in files:
             delete_file(f.id)
@@ -119,7 +124,7 @@ class BaseChallenge(object):
         """
         data = request.form or request.get_json()
         submission = data["submission"].strip()
-        flags = Flags.query.filter_by(challenge_id=challenge.id).all()
+        flags = Flags.query.filter_by(challenge_id=challenge.id, user_email=get_current_user().email).all()
         for flag in flags:
             try:
                 if get_flag_class(flag.type).compare(flag, submission):

@@ -95,6 +95,8 @@ class ImportCSVForm(BaseForm):
     )
     csv_file = FileField("CSV File", description="CSV file contents")
 
+class ImportBulkUploadCSVForm(BaseForm):
+    csv_file = FileField("CSV File", description="CSV file contents")
 
 class LegalSettingsForm(BaseForm):
     tos_url = URLField(

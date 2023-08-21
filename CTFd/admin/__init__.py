@@ -45,11 +45,12 @@ from CTFd.models import (
     Tracking,
     Unlocks,
     Users,
+    UserVariables,
     db,
 )
 from CTFd.utils import config as ctf_config
 from CTFd.utils import get_app_config, get_config, set_config
-from CTFd.utils.csv import dump_csv, load_challenges_csv, load_teams_csv, load_users_csv
+from CTFd.utils.csv import dump_csv,load_flags_csv, load_uservariables_csv, load_challenges_csv, load_teams_csv, load_users_csv
 from CTFd.utils.decorators import admins_only
 from CTFd.utils.exports import background_import_ctf
 from CTFd.utils.exports import export_ctf as export_ctf_util
@@ -143,6 +144,8 @@ def import_csv():
 
     loaders = {
         "challenges": load_challenges_csv,
+        "uservariables": load_uservariables_csv,
+        "flags": load_flags_csv,
         "users": load_users_csv,
         "teams": load_teams_csv,
     }
@@ -154,6 +157,9 @@ def import_csv():
         return redirect(url_for("admin.config"))
     else:
         return jsonify(success), 500
+    
+
+     
 
 
 @admin.route("/admin/export/csv")

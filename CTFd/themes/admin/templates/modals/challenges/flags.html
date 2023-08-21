@@ -1,2 +1,17 @@
+{% with form = Forms.config.ImportBulkUploadCSVForm() %}
+			<form method="POST" action="{{ url_for('admin.import_csv') }}" enctype="multipart/form-data" id="import-flags-csv-form">
+                <div class="form-group">
+					<b>{{ form.csv_file.label }}</b>
+					{{ form.csv_file(class="form-control-file", id="import-flags-csv-file", accept=".csv") }}
+					<small class="form-text text-muted">
+						{{ form.csv_file.description }}
+					</small>
+				</div>
+				{{ form.nonce() }}
+                <input type="hidden" id="flags-csv-type" value="flags">
+                <input type="hidden" name="challenge-id" id="challenge-id" value="{{challenge.id}}">
+				<input type="submit" class="btn btn-warning" value="Import CSV">
+			</form>
+			{% endwith %}
 <div id="challenge-flags">
 </div>

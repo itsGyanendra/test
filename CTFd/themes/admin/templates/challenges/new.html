@@ -23,14 +23,21 @@
 				<form method="POST" enctype="multipart/form-data">
 					<div class="form-group">
 						<div class="row">
-							<div class="col-md-8">
+							<div class="col-md-6">
 								<label>
 									Flag:<br>
 									<small class="form-text text-muted">Static flag for your challenge</small>
 								</label>
 								<input type="text" class="form-control" name="flag">
 							</div>
-							<div class="col-md-4">
+							<div class="col-md-3">
+								<label>
+									User ID:<br>
+									<small class="form-text text-muted">Enter user ID</small>
+								</label>
+								<input type="text" class="form-control" name="flag_user_id">
+							</div>
+							<div class="col-md-3">
 								<label>
 									&nbsp;
 									<small class="form-text text-muted">&nbsp;</small>
@@ -44,6 +51,7 @@
 						<input type="hidden" name="flag_type" value="static">
 					</div>
 					<div class="form-group">
+						
 						<div class="form-group">
 							<label>
 								Files:

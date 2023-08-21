@@ -44,5 +44,6 @@ def listing():
 
     if ctf_ended() is True:
         infos.append(f"{Configs.ctf_name} has ended")
-
+    print(infos)
+    print(errors)
     return render_template("challenges.html", infos=infos, errors=errors)

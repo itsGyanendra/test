@@ -10,6 +10,7 @@ from CTFd.models import (
     Teams,
     UserFields,
     Users,
+    UserVariables,
     db,
     get_class_by_tablename,
 )
@@ -17,6 +18,8 @@ from CTFd.plugins.challenges import get_chal_class
 from CTFd.schemas.challenges import ChallengeSchema
 from CTFd.schemas.teams import TeamSchema
 from CTFd.schemas.users import UserSchema
+from CTFd.schemas.flags import FlagSchema
+from CTFd.schemas.uservariables import UserVariableSchema
 from CTFd.utils.config import is_teams_mode, is_users_mode
 from CTFd.utils.scores import get_standings
 
@@ -324,6 +327,34 @@ def load_users_csv(dict_reader):
 
 def load_teams_csv(dict_reader):
     schema = TeamSchema()
+    errors = []
+    for i, line in enumerate(dict_reader):
+        response = schema.load(line)
+        if response.errors:
+            errors.append((i, response.errors))
+        else:
+            db.session.add(response.data)
+            db.session.commit()
+    if errors:
+        return errors
+    return True
+
+def load_uservariables_csv(dict_reader):
+    schema = UserVariableSchema()
+    errors = []
+    for i, line in enumerate(dict_reader):
+        response = schema.load(line)
+        if response.errors:
+            errors.append((i, response.errors))
+        else:
+            db.session.add(response.data)
+            db.session.commit()
+    if errors:
+        return errors
+    return True
+
+def load_flags_csv(dict_reader):
+    schema = FlagSchema()
     errors = []
     for i, line in enumerate(dict_reader):
         response = schema.load(line)

@@ -51,13 +51,14 @@ class FlagList(Resource):
     @validate_args(
         {
             "challenge_id": (int, None),
+            "user_id": (int, None),
             "type": (str, None),
             "content": (str, None),
             "data": (str, None),
             "q": (str, None),
             "field": (
                 RawEnum(
-                    "FlagFields", {"type": "type", "content": "content", "data": "data"}
+                    "FlagFields", {"type": "type", "content": "content", "user_id":"user_id", "data": "data"}
                 ),
                 None,
             ),

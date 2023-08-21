@@ -4,7 +4,7 @@ import $ from "jquery";
 import "bootstrap/js/dist/tab";
 import CTFd from "core/CTFd";
 import { htmlEntities } from "core/utils";
-import { ezQuery, ezAlert, ezToast } from "core/ezq";
+import { ezQuery, ezAlert, ezProgressBar, ezToast } from "core/ezq";
 import { default as helpers } from "core/helpers";
 import { bindMarkdownEditors } from "../styles";
 import Vue from "vue/dist/vue.esm.browser";
@@ -15,7 +15,89 @@ import TopicsList from "../components/topics/TopicsList.vue";
 import TagsList from "../components/tags/TagsList.vue";
 import ChallengeFilesList from "../components/files/ChallengeFilesList.vue";
 import HintsList from "../components/hints/HintsList.vue";
+import UserVariablesList from "../components/uservariables/UserVariablesList.vue";
 import NextChallenge from "../components/next/NextChallenge.vue";
+
+function importCSV(csv_file, csv_type) {
+  let form_data = new FormData();
+  form_data.append("csv_file", csv_file);
+  form_data.append("csv_type", csv_type);
+  form_data.append("nonce", CTFd.config.csrfNonce);
+  let pg = ezProgressBar({
+    width: 0,
+    title: "Upload Progress"
+  });
+
+  $.ajax({
+    url: CTFd.config.urlRoot + "/admin/import/csv",
+    type: "POST",
+    data: form_data,
+    processData: false,
+    contentType: false,
+    statusCode: {
+      500: function(resp) {
+        // Normalize errors
+        let errors = JSON.parse(resp.responseText);
+        let errorText = "";
+        errors.forEach(element => {
+          errorText += `Line ${element[0]}: ${JSON.stringify(element[1])}\n`;
+        });
+
+        // Show errors
+        alert(errorText);
+
+        // Hide progress modal if its there
+        pg = ezProgressBar({
+          target: pg,
+          width: 100
+        });
+        setTimeout(function() {
+          pg.modal("hide");
+        }, 500);
+      }
+    },
+    xhr: function() {
+      let xhr = $.ajaxSettings.xhr();
+      xhr.upload.onprogress = function(e) {
+        if (e.lengthComputable) {
+          let width = (e.loaded / e.total) * 100;
+          pg = ezProgressBar({
+            target: pg,
+            width: width
+          });
+        }
+      };
+      return xhr;
+    },
+    success: function(_data) {
+      pg = ezProgressBar({
+        target: pg,
+        width: 100
+      });
+      setTimeout(function() {
+        pg.modal("hide");
+      }, 500);
+      setTimeout(function() {
+        window.location.reload();
+      }, 700);
+    }
+  });
+}
+
+function importUserVariableCSV(event){
+  event.preventDefault();
+  let csv_file = document.getElementById("import-uservariables-csv-file").files[0];
+  let csv_type = document.getElementById("uservariables-csv-type").value;
+  importCSV(csv_file, csv_type)
+}
+function importFlagCSV(event){
+  event.preventDefault();
+  let csv_file = document.getElementById("import-flags-csv-file").files[0];
+  let csv_type = document.getElementById("flags-csv-type").value;
+  importCSV(csv_file, csv_type)
+}
+$("#import-uservariables-csv-form").submit(importUserVariableCSV);
+$("#import-flags-csv-form").submit(importFlagCSV);
 
 function loadChalTemplate(challenge) {
   CTFd._internal.challenge = {};
@@ -72,6 +154,7 @@ function handleChallengeOptions(event) {
     challenge_id: params.challenge_id,
     content: params.flag || "",
     type: params.flag_type,
+    user_id: params.flag_user_id,
     data: params.flag_data ? params.flag_data : ""
   };
   // Define a save_challenge function
@@ -265,6 +348,16 @@ $(() => {
     }).$mount(vueContainer);
   }
 
+    // Load UserVariablesList component
+  if (document.querySelector("#challenge-uservariables")) {
+    const uservariableList = Vue.extend(UserVariablesList);
+    let vueContainer = document.createElement("div");
+    document.querySelector("#challenge-uservariables").appendChild(vueContainer);
+    new uservariableList({
+      propsData: { challenge_id: window.CHALLENGE_ID }
+    }).$mount(vueContainer);
+  }
+
   // Load TopicsList component
   if (document.querySelector("#challenge-topics")) {
     const topicsList = Vue.extend(TopicsList);
@@ -347,3 +440,4 @@ $(() => {
     });
   });
 });
+
